@@ -102,11 +102,9 @@ It will still show the “cluster” filter, but it may be empty.(as it is empty
 
 ## CPU UTILIZATION (Top Row)
 
-3.10%   niq-mysql-rds
-
 Meaning:
 
-MySQL RDS instance is using 3.10% CPU.
+MySQL RDS instance is using 2.69% CPU.
 
 This is VERY low, which means:
 
@@ -130,7 +128,7 @@ DB is extremely healthy.
 
 You see:
 
-3.1%
+2.69%
 
 This is the average CPU usage for the selected time range (1h).
 
@@ -170,7 +168,7 @@ You see:
 
 Meaning:
 
-- Your RDS instance has 158 MB of free memory (RAM).
+- Your RDS instance has 5.1GB of free memory (RAM).
 
 - Note: RDS MySQL caches data heavily in RAM.
 So RAM going down is normal when MySQL is fully optimized.
