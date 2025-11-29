@@ -272,3 +272,31 @@ A high queue depth indicates storage volume is experiencing high I/O.
 
 But values are extremely low, so it's not a concern.
 
+## AMAZON RDS MYSQL LOGS (Bottom Section)
+
+This widget usually shows:
+
+- Number of log entries
+
+- Log volume
+
+- Slow query logs
+
+- Error logs
+
+But in your screenshot: There is no data showing
+
+This is because MySQL native integration is NOT enabled
+
+CloudWatch does not push MySQL engine logs directly.
+
+To see logs like:
+
+- Slow query logs
+
+- Error logs
+
+- Query statements
+
+You must enable:  Datadog MySQL Integration (mysql.can_connect)
+
