@@ -300,3 +300,117 @@ To see logs like:
 
 You must enable:  Datadog MySQL Integration (mysql.can_connect)
 
+![diagram](images/rdsData4.png)
+
+## Connections by Database
+
+This part of the Datadog RDS dashboard focuses only on database connections.
+
+A “connection” means:
+
+An application/user has opened a session with the database
+
+Example: your backend service opening DB connections via JDBC, Hibernate, Node.js, Go, etc.
+
+**56   niq-mysql-rds**
+
+Meaning:
+
+Your RDS instance niq-mysql-rds currently has 56 active DB connections.
+
+That means 56 sessions are open between your application(s) and the database.
+
+What this tells you
+
+Your database is not idle.
+
+Some services/applications are connected.
+
+56 is a normal connection count for small or medium apps.
+
+If this number was in the hundreds or thousands → it could indicate overload or connection leak.
+
+## Connections by Database (Right Graph)
+
+This graph shows how DB connections changed over the last 1 hour.
+
+What the graph shows:
+
+It stays around 0.9 to 1 connection in many previous minutes.
+
+And now it jumped to 56 connections (shown in the left box).
+
+Why is the graph showing only ~1 earlier?
+
+Because:
+
+At that specific time range, the DB only had ~1 active connection.
+
+Recently (around the last few minutes), the number of connections increased.
+
+Possible simple reasons:
+
+- Your application just became active
+
+- A Lambda or script started using DB
+
+- Monitoring tools or admin clients connected
+
+- Connection pooling created new connections
+
+Nothing alarming unless it keeps climbing rapidly.
+
+## Active Transactions by Database (Bottom Left Graph)
+
+This graph is showing:
+
+0 active transactions
+
+Meaning:
+
+Right now, there are no ongoing database transactions
+(no long-running INSERT/UPDATE/DELETE or SELECT queries stuck)
+
+Why this is good?
+
+- No query is hanging
+
+- No transaction is blocking others
+
+Your DB is not stuck with locks
+
+If it was high (e.g., 20, 50, 100):
+
+It would indicate:
+
+- Heavy writes
+
+- Long-running queries
+
+- Performance problems
+
+You are safe — 0 means the database is quiet.
+
+## Connections by Cluster (Bottom Right Circle)
+
+You see:
+
+56 conns
+
+Meaning:
+
+Your entire cluster (in your case, you have only one instance) has 56 total connections.
+
+Why does Datadog show "cluster"?
+
+Because:
+
+In Aurora MySQL, you can have multiple DB instances (writer + reader)
+
+And Datadog shows connection distribution across the cluster
+
+But you have a single RDS instance, so:
+
+Cluster = just one machine
+
+Connections = same number (56)
