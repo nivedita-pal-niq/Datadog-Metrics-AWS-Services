@@ -96,3 +96,179 @@ If you are using:
 Then you may NOT have a cluster.
 
 It will still show the “cluster” filter, but it may be empty.(as it is empty).
+
+![diagram](images/rdsData2.png)
+![diagram](images/rdsData3.png)
+
+## CPU UTILIZATION (Top Row)
+
+3.10%   niq-mysql-rds
+
+Meaning:
+
+MySQL RDS instance is using 3.10% CPU.
+
+This is VERY low, which means:
+
+- DB is not under load
+
+- No heavy queries
+
+- Plenty of CPU capacity remaining
+
+CPU Thresholds:
+
+- 0–60% → Healthy
+
+- >80% → Might need larger instance
+
+- >90% → Critical
+
+DB is extremely healthy.
+
+## Avg CPU Utilization
+
+You see:
+
+3.1%
+
+This is the average CPU usage for the selected time range (1h).
+
+Meaning:
+
+- Over the last hour, CPU has stayed consistently low.
+
+- No spikes or dangerous CPU levels.
+
+## Instances with Highest CPU Utilization (Graph)
+
+This is a time-series graph showing the CPU usage minute-by-minute.
+
+What it's showing:
+
+- CPU is constantly fluctuating between 1% and 5%
+
+- Occasional spikes up to 5–7%
+
+- But still extremely safe
+
+This helps detect:
+
+- CPU spikes
+
+- Sudden traffic bursts
+
+- Query load cycles
+
+Graph is stable → No unusual behavior.
+
+## AVAILABLE RAM (Memory Metrics)
+
+You see:
+
+158 MB   niq-mysql-rds
+
+Meaning:
+
+- Your RDS instance has 158 MB of free memory (RAM).
+
+- Note: RDS MySQL caches data heavily in RAM.
+So RAM going down is normal when MySQL is fully optimized.
+
+Thresholds:
+
+- > 100 MB → Good
+
+- < 50 MB → Might start swapping (slow)
+
+- < 20 MB → Dangerous
+
+158 MB is safe, not a problem.
+
+## Instances with Least Available RAM (Graph + Forecast)
+
+The graph is showing:
+
+Your DB's free memory over time
+
+It stays around 155–170 MB
+
+Then Datadog gives a forecast (pink line) predicting it will stay stable for the next hour
+
+Forecast is based on:
+
+- Past data pattern
+
+- Trend line
+
+Since memory is stable, the forecast is flat.
+
+This means:
+- Your DB is not leaking memory
+- No long-running queries are eating RAM
+- No memory problem expected in next hour
+
+ ## NETWORK THROUGHPUT
+
+Two lines:
+
+Purple = Transmit throughput (DB sending data)
+
+Blue = Receive throughput (DB receiving data)
+
+Values are in KB/second.
+
+Your graph shows:
+
+Transmit around 10–14 KB/s
+
+Receive around 1–3 KB/s
+
+Meaning:
+
+- Light traffic
+
+- Normal communication between application and DB
+
+- No network bottlenecks
+
+If values were very high (~5–10 MB/s), it would indicate:
+
+- Very busy system
+
+- Large reads/writes
+
+- Heavy query load
+
+We are far from that. 
+
+## DISK QUEUE DEPTH
+This measures how many disk operations are waiting to be processed.
+
+Interpretation:
+
+- Low queue depth (<1) → Disk is fast, no bottleneck
+
+- High queue depth (>10) → Disk is struggling
+
+High queue depth means many operations are waiting because storage is slow or overloaded.
+
+Your graph shows:
+
+A long period with slightly elevated queue depth
+
+But still small (around 0.001–0.004)
+
+It rises slightly and returns to normal
+
+Meaning:
+- Disk is healthy
+- No write/read pressure
+- No bottlenecks
+
+The purple text box beside it explains:
+
+A high queue depth indicates storage volume is experiencing high I/O.
+
+But values are extremely low, so it's not a concern.
+
