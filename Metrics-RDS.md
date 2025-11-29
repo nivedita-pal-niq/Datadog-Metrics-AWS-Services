@@ -1,6 +1,6 @@
 # DATADOG RDS (MySQL) DASHBOARD:
 
-![diagram]()
+![diagram](images/rdsData1.png)
 
 It reads metrics from CloudWatch + some from the MySQL engine, and displays the health, performance, and availability of the database.
 It is specifically focused on MySQL RDS instances.
