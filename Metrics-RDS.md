@@ -102,201 +102,227 @@ It will still show the “cluster” filter, but it may be empty.(as it is empty
 
 ## CPU UTILIZATION (Top Row)
 
-Meaning:
+This block shows how much CPU every database is using.
 
-MySQL RDS instance is using 2.69% CPU.
+CPU % values:
 
-This is VERY low, which means:
+niq-mysql-rds → 3.14%
 
-- DB is not under load
+pimcore-qa-rdsinstance → 2.95%
 
-- No heavy queries
+pimcore-dev-rdsinstance → 2.88%
 
-- Plenty of CPU capacity remaining
+pimcore-uat-rdsinstance → 1.80%
 
-CPU Thresholds:
+What this means in simple words:
 
-- 0–60% → Healthy
+- All your databases are using very low CPU.
 
-- >80% → Might need larger instance
+- None of them are overloaded.
 
-- >90% → Critical
+- They have plenty of spare processing power.
 
-DB is extremely healthy.
+- No performance issues from CPU side.
+
+Ideal CPU range:
+
+- 0–60% → Safe
+
+- 60–80% → Monitor
+
+- >80% → Danger / DB too busy
+
+Your values are around 2–3%, which is excellent.
 
 ## Avg CPU Utilization
 
-You see:
+This shows:
 
-2.69%
-
-This is the average CPU usage for the selected time range (1h).
+Avg CPU Utilization: 2.69%
 
 Meaning:
 
-- Over the last hour, CPU has stayed consistently low.
+Across all RDS instances, your average CPU load is less than 3%.
 
-- No spikes or dangerous CPU levels.
+This is extremely low consumption → databases are mostly idle or lightly used.
 
 ## Instances with Highest CPU Utilization (Graph)
 
-This is a time-series graph showing the CPU usage minute-by-minute.
+The graph shows:
 
-What it's showing:
+How CPU changed over the last 1 hour
 
-- CPU is constantly fluctuating between 1% and 5%
+Spikes up to 9–10% for some instances
 
-- Occasional spikes up to 5–7%
+But overall staying between 2–6%
 
-- But still extremely safe
+Simple meaning:
 
-This helps detect:
+The DB gets small bursts of activity
 
-- CPU spikes
+But no heavy load
 
-- Sudden traffic bursts
-
-- Query load cycles
-
-Graph is stable → No unusual behavior.
+System is stable and healthy
 
 ## AVAILABLE RAM (Memory Metrics)
 
-You see:
+This block shows how much memory (RAM) is free on each database.
 
-158 MB   niq-mysql-rds
+Values shown:
 
-Meaning:
+- pimcore-dev-rdsinstance → 5.91 GiB
 
-- Your RDS instance has 5.1GB of free memory (RAM).
+- pimcore-qa-rdsinstance → 5.32 GiB
 
-- Note: RDS MySQL caches data heavily in RAM.
-So RAM going down is normal when MySQL is fully optimized.
+- pimcore-uat-rdsinstance → 1.75 GiB
 
-Thresholds:
+- niq-mysql-rds → 0.15 GiB (150 MB)
 
-- > 100 MB → Good
+What this means in simple terms:
 
-- < 50 MB → Might start swapping (slow)
+- The Pimcore DBs have plenty of free RAM (5–6 GB free).
 
-- < 20 MB → Dangerous
+- The UAT DB has moderate free RAM (1.75 GB).
 
-158 MB is safe, not a problem.
+- The NIQ DB has very low free RAM (0.15 GB).
+
+But low free RAM in MySQL is normal because MySQL uses RAM aggressively for caching.
+
+Still:
+
+150 MB is low and worth monitoring.
 
 ## Instances with Least Available RAM (Graph + Forecast)
 
-The graph is showing:
+The graph shows RAM trends over time.
 
-Your DB's free memory over time
+Highlighted (in blue):
 
-It stays around 155–170 MB
+pimcore-qa-rdsinstance staying steady around 5.1–5.5 GiB free
 
-Then Datadog gives a forecast (pink line) predicting it will stay stable for the next hour
+Vertical dotted pink line:
 
-Forecast is based on:
+"Forecast" → Datadog predicting RAM usage for next hour
 
-- Past data pattern
+Meaning:
 
-- Trend line
+Memory usage is stable.
 
-Since memory is stable, the forecast is flat.
+No sudden drops → no memory leaks.
 
-This means:
-- Your DB is not leaking memory
-- No long-running queries are eating RAM
-- No memory problem expected in next hour
+System should remain stable for next hour.
 
  ## NETWORK THROUGHPUT
 
-Two lines:
+This graph has two lines:
 
-Purple = Transmit throughput (DB sending data)
+Purple = Transmit Throughput (DB sending data)
 
-Blue = Receive throughput (DB receiving data)
+Light blue = Receive Throughput (DB receiving data)
 
-Values are in KB/second.
+Values are measured in kilobytes per second (KB/s).
 
-Your graph shows:
+What the graph shows:
 
-Transmit around 10–14 KB/s
+You have 3 noticeable spikes:
 
-Receive around 1–3 KB/s
+Around 14:00
 
-Meaning:
+Around 14:15
 
-- Light traffic
+Around 14:30
 
-- Normal communication between application and DB
+The spikes reach up to ~800 KB/s (less than 1 MB/s)
 
-- No network bottlenecks
+After each spike, traffic goes back to very low or near zero
 
-If values were very high (~5–10 MB/s), it would indicate:
+What this means in simple words:
 
-- Very busy system
+Your database is not constantly busy.
 
-- Large reads/writes
+It only gets activity in short bursts.
 
-- Heavy query load
+These bursts could be:
 
-We are far from that. 
+- A scheduled job or cron job
+
+- App sending some data at intervals
+
+- Monitoring or health check scripts
+
+- User activity in the application
+
+Is this good or bad?
+
+- This is completely normal if your application has periodic traffic.
+
+- No signs of overload or performance issues.
+
+- Network traffic is very small.
 
 ## DISK QUEUE DEPTH
-This measures how many disk operations are waiting to be processed.
 
-Interpretation:
+This graph shows how many database operations are waiting for the disk.
 
-- Low queue depth (<1) → Disk is fast, no bottleneck
+Imagine your disk is a shop counter:
 
-- High queue depth (>10) → Disk is struggling
+If queue depth is 0 → No one is waiting. Good.
 
-High queue depth means many operations are waiting because storage is slow or overloaded.
+If queue depth is 5–10 → People are waiting. Slow performance.
 
-Your graph shows:
+If queue depth is 30+ → Serious overload.
 
-A long period with slightly elevated queue depth
+What the graph shows:
 
-But still small (around 0.001–0.004)
+Very small, tiny activity spikes (close to zero)
 
-It rises slightly and returns to normal
+One slightly taller spike around 03:00 AM
 
-Meaning:
-- Disk is healthy
-- No write/read pressure
-- No bottlenecks
+But almost everything is 0 to 0.02 requests queued
 
-The purple text box beside it explains:
+Simple meaning:
 
-A high queue depth indicates storage volume is experiencing high I/O.
+Your database storage is never waiting or overloaded.
 
-But values are extremely low, so it's not a concern.
+Disk operations are fast and smooth.
+
+No performance issues with storage.
+
+Why that small spike?
+
+Probably:
+
+- A backup job
+
+- A maintenance task
+
+- A query hitting disk
+
+But even the spike is extremely small.
+
+Final conclusion:
+- Disk performance is excellent.
+- No bottlenecks.
 
 ## AMAZON RDS MYSQL LOGS (Bottom Section)
 
-This widget usually shows:
+It shows:
 
-- Number of log entries
+No matching results found
 
-- Log volume
+What this means:
 
-- Slow query logs
+- Datadog is not receiving MySQL logs from your RDS.
 
-- Error logs
+This is expected because you have not enabled MySQL integration.
 
-But in your screenshot: There is no data showing
+Right now, Datadog is only receiving CloudWatch metrics, not logs or query details.
 
-This is because MySQL native integration is NOT enabled
+If logs were enabled, you would see: Error logs, Slow query logs, General query logs, Log count, Log volume
 
-CloudWatch does not push MySQL engine logs directly.
+To fix this:
 
-To see logs like:
-
-- Slow query logs
-
-- Error logs
-
-- Query statements
-
-You must enable:  Datadog MySQL Integration (mysql.can_connect)
+You must forward RDS logs → CloudWatch Logs → Datadog logs OR enable MySQL Integration.
 
 ![diagram](images/rdsData4.png)
 
@@ -330,52 +356,69 @@ If this number was in the hundreds or thousands → it could indicate overload o
 
 ## Connections by Database (Right Graph)
 
-This graph shows how DB connections changed over the last 1 hour.
+Numbers:
 
-What the graph shows:
+57 → niq-mysql-rds
 
-It stays around 0.9 to 1 connection in many previous minutes.
+27 → pimcore-uat-rdsinstance-...
 
-And now it jumped to 56 connections (shown in the left box).
+20 → pimcore-dev-rdsinstance-...
 
-Why is the graph showing only ~1 earlier?
+20 → pimcore-qa-rdsinstance-...
 
-Because:
+In simple words:
 
-At that specific time range, the DB only had ~1 active connection.
+These numbers are how many database sessions (connections) exist for each DB during this time range.
 
-Recently (around the last few minutes), the number of connections increased.
+So at peak/average (depending on the widget config) in this 1 hour:
 
-Possible simple reasons:
+niq-mysql-rds had about 57 connections
 
-- Your application just became active
+UAT DB had 27
 
-- A Lambda or script started using DB
+Dev and QA each had 20
 
-- Monitoring tools or admin clients connected
+A “connection” = one open link between an app and the DB.
 
-- Connection pooling created new connections
+So you can read it as:
 
-Nothing alarming unless it keeps climbing rapidly.
+“The NIQ DB is the most used (57 connections), then UAT, then Dev and QA.”
+
+All of these are totally normal numbers for pooled connections – not scary.
+
+## Connections by Database (time graph)
+
+This is a time-series graph of connections over the last 1 hour.
+
+X-axis = time (13:55 → 14:50)
+
+Y-axis = number of connections
+
+Each color = one database
+
+It’s a stacked graph, so the layers sit on top of each other.
+
+What it’s showing:
+
+You see repeating bumps (steps) going up and down.
+
+When the graph rises, it means more connections were opened.
+
+When it goes down, many connections were closed again.
 
 ## Active Transactions by Database (Bottom Left Graph)
 
-This graph is showing:
+This graph is basically flat at 0.
 
-0 active transactions
+Active transaction = a query that is currently running inside a transaction (like a long INSERT/UPDATE/DELETE/SELECT that is still in progress).
 
-Meaning:
+Flat 0 means:
 
-Right now, there are no ongoing database transactions
-(no long-running INSERT/UPDATE/DELETE or SELECT queries stuck)
+There are no long-running transactions.
 
-Why this is good?
+Queries are coming in, getting processed, and finishing quickly.
 
-- No query is hanging
-
-- No transaction is blocking others
-
-Your DB is not stuck with locks
+No transaction is “stuck” and blocking others.
 
 If it was high (e.g., 20, 50, 100):
 
@@ -391,24 +434,400 @@ You are safe — 0 means the database is quiet.
 
 ## Connections by Cluster (Bottom Right Circle)
 
-You see:
+The donut shows:
 
-56 conns
+31 conns
+
+100% share (only one cluster in this view)
+
+Cluster here basically means: all these RDS instances together (or the group for this account/filter).
+
+Why 31 and not 57+27+20+20?
+
+Because this widget is using a different aggregation (for example, average over the last hour or a different grouping). The key idea is:
+
+It’s telling you:
+
+Across this cluster/group, there are about 31 database connections overall (on average during this time).
+
+![diagram](images/rdsData5.png)
+
+## Max Write Latency – 2.2 ms
+
+“Write” = inserting/updating/deleting data.
+
+“Latency” = how long one write takes.
+
+2.2 ms (milliseconds) = 0.0022 seconds → very fast.
+
+Simple meaning:
+
+The slowest writes in the last hour still completed in about 2 milliseconds. That’s extremely healthy.
+
+If this number were like 100–500 ms, you’d worry.
+
+2.2 ms = great.
+
+## Max Read Latency – 1.2 ms
+
+“Read” = SELECT queries (getting data).
+
+Max read latency is 1.2 ms, again very fast.
 
 Meaning:
 
-Your entire cluster (in your case, you have only one instance) has 56 total connections.
+Even the slowest read operations were around 1 millisecond – no read performance issue.
 
-Why does Datadog show "cluster"?
+## Max Commit Latency – (No data)
 
-Because:
+Commit latency = how long it takes to finish a transaction (COMMIT).
 
-In Aurora MySQL, you can have multiple DB instances (writer + reader)
+No data here usually means:
 
-And Datadog shows connection distribution across the cluster
+MySQL native integration / enhanced metrics for commit aren’t enabled,
 
-But you have a single RDS instance, so:
+or
 
-Cluster = just one machine
+There hasn’t been measurable commit activity in the period.
 
-Connections = same number (56)
+## SELECT Latency & DML Latency – (No data)
+
+SELECT latency → specific latency for SELECT queries
+
+DML latency → latency for DML operations (INSERT, UPDATE, DELETE)
+
+No data again means:
+
+Those specific DB-engine-level metrics are not available yet (likely need MySQL integration), or traffic is too low.
+
+## Instances with Highest Write Latency (left graph)
+
+Line graph by time (past 1 hour).
+
+Y-axis = milliseconds.
+
+Each colored line = one DB instance (niq-mysql-rds, pimcore-dev…, etc.).
+
+You see:
+
+Values bouncing mostly between 0 and 2 ms.
+
+Simple meaning:
+
+All databases are writing very quickly, usually under 2 ms. No scary spikes.
+
+## Instances with Highest Read Latency (middle graph)
+
+Same idea but for reads.
+
+You see:
+
+Spiky green lines under ~1.5 ms.
+
+Meaning:
+
+Reads have tiny spikes but still under 1–1.5 ms, which is excellent.
+
+## Slow Query Rate – empty graph
+
+This would show:
+
+How many queries are classified as slow per second.
+
+Empty =:
+
+Either slow-query logging / integration isn’t enabled
+
+Or simply no slow queries detected.
+
+Given your latency numbers are tiny, it’s very likely no slow queries.
+
+## Instances with Blocked Transactions – flat at 0
+
+Blocked transaction = one query waiting because another one is locking the same rows/table.
+
+Flat line at 0 means:
+
+No transactions are blocked. Nothing is stuck waiting on locks.
+
+This is very good.
+
+## Queries per second / Reads per second / Writes per second
+
+For each:
+
+X-axis = time (over 4 hours – see “4h” label).
+
+Y-axis = number of operations per second.
+
+Graphs look essentially very low / almost flat.
+
+Meaning:
+
+DB is not handling a heavy load.
+
+Only a small number of queries per second are coming in, or the metric isn’t populated for all instances without deeper integration.
+
+In simple words:
+
+Right now, the database is not very busy in terms of volume.
+
+## SELECT Throughput and DML Throughput
+
+These would show volume of SELECT vs INSERT/UPDATE/DELETE over time.
+
+Currently empty → again, likely need MySQL integration or there isn’t enough data.
+
+![diagram](images/rdsData6.png)
+
+## Replication Lag by Instance (left graph)
+
+What it is:
+
+Used when you have replicas (one main DB + one or more copies).
+
+Replication lag = how many seconds the replica is behind the main DB.
+
+Example:
+If main DB gets a write now, and replica gets it 5 seconds later → lag = 5 seconds.
+
+In your graph:
+
+The line is flat at 0.
+
+No spikes, no values.
+
+We either don’t have replicas, or there is no delay between main DB and replicas.
+There is no replication problem.
+
+So nothing to worry about here.
+
+## Deadlocks by Instance (middle graph)
+
+What is a deadlock?
+
+Two queries block each other:
+
+Query A waits for Query B
+
+Query B waits for Query A
+
+Neither can move → “deadlock”.
+
+Databases then abort one of them.
+
+In your graph:
+
+The line is at 0 for the whole timeline.
+
+No deadlocks recorded.
+
+There were no situations where queries locked each other.
+No deadlock issues in the last hour.
+
+Again, very good.
+
+## Queries with Errors (right box)
+
+This widget should show:
+
+Count of queries that failed (syntax error, permission denied, etc.).
+
+But your box says: No Data
+
+Either there were no queries with errors
+OR error-level monitoring from inside MySQL is not enabled.
+
+Given your environment is light and you haven’t enabled full DB monitoring, both are possible. But practically, you can treat it as:
+
+We didn’t see any DB errors in this dashboard.
+
+## Queries with Top Execution Time (bottom left)
+
+This would normally show:
+
+The slowest queries (which SQL took the longest).
+
+Helpful to find “bad” queries.
+
+Right now it shows:
+
+“No Data”
+
+We are not collecting per-query data yet, so Datadog cannot list slow queries.
+
+You need Database Monitoring / MySQL integration to fill this.
+
+## Query Load by SQL Statement (bottom right)
+
+This would normally show:
+
+Which SQL statements generate the most load (CPU/IO/time).
+
+For example:
+
+SELECT * FROM orders
+
+UPDATE users SET ...
+
+It says:
+
+Query Error – Invalid Query
+
+The panel is trying to run an internal Datadog query to fetch SQL-level data,
+but that data source isn’t available, so the query fails.
+
+This again is because:
+
+Database Monitoring (DBM) is not enabled,
+
+Or the MySQL integration is not set up to collect query samples.
+
+![diagram](images/rdsData7.png)
+
+## Instances with Lowest Available Disk Space (Left)
+
+This shows how much free storage is left for each RDS instance.
+
+Values shown:
+
+Instance	Free Storage
+- niq-mysql-rds	17.2 GiB
+- pimcore-qa	44.9 GiB
+- pimcore-dev	46.1 GiB
+- pimcore-uat	62.4 GiB
+
+niq-mysql-rds has the least free space → 17.2 GiB, but this is still okay.
+
+All other databases have plenty of disk space (45–62 GiB).
+
+When this becomes dangerous:
+
+If free space goes below 10% of total disk → performance becomes slow and database may crash.
+
+Right now → Nothing is alarming.
+
+## Instances with Least % Storage Available (Right)
+
+This shows the percentage of free storage left, not the actual GiB.
+
+Values:
+
+- pimcore-dev → 92.2% free
+
+- pimcore-qa → 89.9% free
+
+- niq-mysql-rds → 85.8% free
+
+- pimcore-uat → 62.4% free
+
+All databases have LOTS of storage left.
+
+No risk of running out of disk.
+
+UAT has the least, but even it is safe.
+
+The purple message explains:
+
+“If free storage % is low, consider increasing storage."
+
+Not needed now.
+
+## Average Write Operations per Second (Middle)
+
+You see:
+
+5.8 ops/s (operations per second)
+
+This means:
+
+Across all DBs, on average, there are 5–6 write operations happening every second.
+
+A write operation = insert / update / delete.
+
+Databases are handling a small but active amount of writes.
+Not high, not zero — normal load.
+
+## Write Operations by Instance
+
+You see values like:
+
+- pimcore-uat → 8.29 ops/s
+
+- pimcore-dev → 7.73 ops/s
+
+- pimcore-qa → 6.84 ops/s
+
+- niq-mysql-rds → 0.34 ops/s
+
+Layman meaning:
+
+Pimcore databases are active and writing data regularly.
+
+niq-mysql-rds is almost idle (very few writes).
+
+This is absolutely normal—depends on the application usage.
+
+## Instances with Highest Write Operations (Graph)
+
+This graph shows write spikes over time.
+
+You see repeated peaks.
+
+Applications send batches of writes every few minutes.
+Write load goes up, then down—normal application behavior.
+
+No danger here.
+
+## Average Read Operations per Second (Middle Left)
+
+This shows:
+
+0.3 ops/s
+
+Very few reads (SELECT queries) happening.
+
+Database is not used heavily for reading.
+
+If this number were like 200 ops/s → heavy traffic.
+
+Yours is tiny → light load.
+
+## Read Operations by Instance
+
+Shows read ops per DB:
+
+pimcore-uat → 0.31
+
+pimcore-qa → 0.30
+
+pimcore-dev → 0.29
+
+niq-mysql-rds → 0.00 (almost no reads)
+
+Small, uniform read traffic.
+Again, this is normal especially for test/dev/QA environments.
+
+## Instances with Highest Read Operations (Graph)
+
+A small fluctuating line.
+
+Reads happen occasionally but not heavily.
+No readability bottlenecks.
+
+## Max Swap Usage (Right)
+
+Shows:
+
+83.6 MiB
+
+Swap = “extra memory” taken from disk when RAM is full.
+
+Using swap is slower than RAM.
+
+But 83 MB is very small — NOT dangerous.
+
+One of your databases briefly ran low on RAM and used a tiny bit of disk as backup.
+Nothing to worry about at this level.
+
+If it was 500MB+, then it’s a performance concern.
