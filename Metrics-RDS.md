@@ -580,7 +580,7 @@ SELECT latency → specific latency for SELECT queries
 
 ## DML latency → latency for DML operations (INSERT, UPDATE, DELETE)
 
-- **Metric Name:** `aws.rds.dml_latency`
+- **Metric Name:** `aws.rds.dmllatency`
 - **Aggregation Used:** `max`
 - **Units:** milliseconds (ms)
 - **Description:** Latency of Data Manipulation Language (INSERT, UPDATE, DELETE) operations.
@@ -631,7 +631,7 @@ Reads have tiny spikes but still under 1–1.5 ms, which is excellent.
 
 ## Slow Query Rate – empty graph
 
-- **Metric Name:** `aws.rds.slow_query`
+- **Metric Name:** `mysql.performance.slow_queries`
 - **Aggregation Used:** `sum`
 - **Units:** count
 - **Description:** Number of queries that exceeded the server-defined slow query threshold.
@@ -666,19 +666,19 @@ This is very good.
 ## Queries per second / Reads per second / Writes per second
 
 Queries/second:
-- **Metric Name:** `aws.rds.queries`
+- **Metric Name:** `mysql.performance.questions`
 - **Aggregation Used:** `avg`
 - **Units:** queries/second
 - **Description:** Total number of queries processed per second.
 
 Reads/second:
-- **Metric Name:** `aws.rds.read_io_ops`
+- **Metric Name:** `mysql.performance.com_select`
 - **Aggregation Used:** `avg`
 - **Units:** operations/second
 - **Description:** Total read operations per second.
 
 Writes/second:
-- **Metric Name:** `aws.rds.write_io_ops`
+- **Metric Name:** `mysql.performance.com_insert`, `mysql.performance.com_update`, `mysql.performance.com_delete`
 - **Aggregation Used:** `avg`
 - **Units:** operations/second
 - **Description:** Total write operations per second.
@@ -710,7 +710,7 @@ SELECT Throughput:
 - **Description:** Number of SELECT queries processed per second.
 
 DML Throughput: 
-- **Metric Name:** `aws.rds.dml_throughput`
+- **Metric Name:** `aws.rds.dmlthroughput`
 - **Aggregation Used:** `avg`
 - **Units:** operations/second
 - **Description:** Number of DML queries processed per second.
@@ -723,7 +723,7 @@ Currently empty → again, likely need MySQL integration or there isn’t enough
 
 ## Replication Lag by Instance (left graph)
 
-- **Metric Name:** `aws.rds.replication_lag`
+- **Metric Name:** `aws.rds.aurora_replica_lag`
 - **Aggregation Used:** `avg`
 - **Units:** seconds
 - **Description:** Shows how many seconds a read replica is behind the primary database in applying transactions.  
@@ -782,7 +782,7 @@ Again, very good.
 
 ## Queries with Errors (right box)
 
-- **Metric Name:** `aws.rds.query_errors`
+- **Metric Name:** `mysql.queries.errors`
 - **Aggregation Used:** `sum`
 - **Units:** count
 - **Description:** Shows how many queries resulted in an error. (No data shown — no query errors detected.)
@@ -802,7 +802,7 @@ We didn’t see any DB errors in this dashboard.
 
 ## Queries with Top Execution Time (bottom left)
 
-- **Metric Name:** `aws.rds.query_execution_time`
+- **Metric Name:** `mysql.queries.count`, `mysql.queries.time`
 - **Aggregation Used:** `max`  
 - **Units:** milliseconds (ms)
 - **Description:** Identifies the slowest-running queries by execution duration. (No data shown — MySQL performance schema plugin may not be enabled.)
@@ -823,7 +823,7 @@ You need Database Monitoring / MySQL integration to fill this.
 
 ## Query Load by SQL Statement (bottom right)
 
-- **Metric Name:** `aws.rds.queries`
+- **Metric Name:**
 - **Aggregation Used:** `sum`
 - **Units:** count  
 - **Description:** Shows query load broken down by SQL statements (e.g., SELECT, UPDATE). Helps identify heavy or frequently used query types.  
