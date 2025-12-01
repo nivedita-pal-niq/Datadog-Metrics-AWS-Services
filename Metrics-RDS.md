@@ -41,7 +41,7 @@ This is normal if you didn't install the Datadog agent on the RDS instance.
 ## Query Rate /s → 5.63k queries
 
 - **Metric Name:** `aws.rds.queries`
-- **Aggregation Used:** `sum`
+- **Aggregation Used:** `avg`
 - **Units:** queries/second
 - **Legend / Tags:** none
 - **Description:** Shows the total number of queries executed per second.
@@ -64,7 +64,7 @@ This metric is usually from: mysql.questions
 ## Open Connections (No data)
 
 - **Metric Name:** `mysql.performance.threads_connected`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** avg (data averaged per time bucket), then reduced over the full timeframe using sum
 - **Units:** connections
 - **Legend / Tags:** none
 - **Description:** Number of currently open MySQL connections, collected via the Datadog MySQL integration.
@@ -74,7 +74,10 @@ This is blank because Datadog cannot run the MySQL integration unless allowed ne
 ## Database Connections by Cluster (Blue Box) “0.28 conns”
 
 - **Metric Name:** `aws.rds.database_connections`
-- **Aggregation Used:** `sum`
+- **Aggregation Used:** avg by → dbclusteridentifier
+
+reduce values in timeframe to → avg
+
 - **Units:** connections
 - **Legend / Tags:** `dbclusteridentifier`
 - **Description:** Displays the total number of active database connections aggregated at the cluster level.
@@ -127,7 +130,10 @@ It will still show the “cluster” filter, but it may be empty.(as it is empty
 ## CPU UTILIZATION
 
 - **Metric Name:** `aws.rds.cpuutilization`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** avg by → dbinstanceidentifier
+
+reduce values in timeframe to → avg
+
 - **Units:** percent (%)
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Shows average CPU usage for each RDS instance over the selected timeframe.
@@ -167,7 +173,10 @@ Your values are around 2–3%, which is excellent.
 ## Avg CPU Utilization
 
 - **Metric Name:** `aws.rds.cpuutilization`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** avg (primary aggregation on the metric)
+
+reduce values in timeframe to → avg
+
 - **Units:** percent (%)
 - **Legend / Tags:** none
 - **Description:** Displays the overall average CPU utilization across selected instances.
@@ -185,7 +194,12 @@ This is extremely low consumption → databases are mostly idle or lightly used.
 ## Instances with Highest CPU Utilization (Graph)
 
 - **Metric Name:** `aws.rds.cpuutilization`
-- **Aggregation Used:** `max`
+- **Aggregation Used:** avg (primary metric aggregation)
+
+limit to top 10 by mean
+
+Grouped by: dbinstanceidentifier
+
 - **Units:** percent (%)
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Highlights RDS instances with the highest CPU usage.
@@ -209,7 +223,10 @@ System is stable and healthy
 ## AVAILABLE RAM (Memory Metrics)
 
 - **Metric Name:** `aws.rds.freeable_memory`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** avg (primary)
+
+Grouped by: dbinstanceidentifier
+
 - **Units:** bytes (displayed as GiB)
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Shows available memory for each RDS instance.
@@ -243,7 +260,12 @@ Still:
 ## Instances with Least Available RAM (Graph + Forecast)
 
 - **Metric Name:** `aws.rds.freeable_memory`
-- **Aggregation Used:** `min`
+- **Aggregation Used:** avg (primary aggregation)
+
+Sorted by: least (bottom 10)
+
+Grouped by: dbinstanceidentifier
+
 - **Units:** bytes (GiB)
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Displays the RDS instances with the lowest available memory.
@@ -268,13 +290,27 @@ System should remain stable for next hour.
 
  ## NETWORK THROUGHPUT
 
- - **Metric Name:**  
-  - Transmit: `aws.rds.network_transmit_throughput`  
-  - Receive: `aws.rds.network_receive_throughput`
+- **Metric Name:** `aws.rds.network_throughput`
 - **Aggregation Used:** `avg`
-- **Units:** bytes/second
-- **Legend / Tags:** `dbinstanceidentifier`
-- **Description:** Shows outgoing and incoming network throughput for RDS instances.
+- **Units:** Kilobytes per second (KB/s)
+- **Legend / Tags:** grouped by *everything* (dbinstanceidentifier, region, account, etc.)
+- **Title in UI:** Receive Throughput
+- **Description:**  
+  Measures how much **incoming network data** the RDS instance receives every second.  
+  In simple terms:  
+  > It shows how much data is coming **into** the database (client requests, reads, connections, etc.).  
+  A sudden increase may mean heavy read/query load or increased application traffic.
+
+- **Metric Name:** `aws.rds.network_transmit_throughput`
+- **Aggregation Used:** `avg`
+- **Units:** Kilobytes per second (KB/s)
+- **Legend / Tags:** grouped by *everything* (dbinstanceidentifier, region, account, etc.)
+- **Title in UI:** Transmit Throughput
+- **Description:**  
+  Measures how much **outgoing network data** the RDS instance sends every second.  
+  In simple terms:  
+  > It shows how much data the database is sending **out** (query results, replication, responses).  
+  Higher values often indicate large query responses or replication activity.
 
 This graph has two lines:
 
@@ -325,7 +361,7 @@ Is this good or bad?
 ## DISK QUEUE DEPTH
 
 - **Metric Name:** `aws.rds.disk_queue_depth`
-- **Aggregation Used:** `max`
+- **Aggregation Used:** `mean` (avg by `dbinstanceidentifier`)
 - **Units:** requests
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Displays the RDS instances with the highest number of pending disk I/O operations.
@@ -397,8 +433,8 @@ You must forward RDS logs → CloudWatch Logs → Datadog logs OR enable MySQL I
 ## Connections by Database (Right Graph)
 
 - **Metric Name:** `aws.rds.database_connections`
-- **Aggregation Used:** `avg`
-- **Units:** connections
+- **Aggregation Used:** `max` (grouped by `dbinstanceidentifier`, then reduced using `sum`)
+- **Units:** connections (count)
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Displays the average number of active database connections per RDS instance.
 
@@ -435,8 +471,8 @@ All of these are totally normal numbers for pooled connections – not scary.
 ## Connections by Database
 
 - **Metric Name:** `aws.rds.database_connections`
-- **Aggregation Used:** `avg`
-- **Units:** connections
+- **Aggregation Used:** `sum` (grouped by `dbinstanceidentifier`)
+- **Units:** connections (count)
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Shows how database connections change over time for each RDS instance.
 
@@ -461,7 +497,7 @@ When it goes down, many connections were closed again.
 ## Active Transactions by Database
 
 - **Metric Name:** `aws.rds.active_transactions`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** `avg` (grouped by `dbinstanceidentifier`)
 - **Units:** count
 - **Legend / Tags:** `dbinstanceidentifier`
 - **Description:** Displays the number of active transactions running on each database instance over time.
@@ -493,7 +529,7 @@ You are safe — 0 means the database is quiet.
 ## Connections by Cluster (Bottom Right Circle)
 
 - **Metric Name:** `aws.rds.database_connections`
-- **Aggregation Used:** `sum`
+- **Aggregation Used:** `avg` (grouped by `dbclusteridentifier`)
 - **Units:** connections
 - **Legend / Tags:** `dbclusteridentifier`
 - **Description:** Aggregates all database connections across the cluster and shows total connections at the cluster level.
@@ -572,7 +608,7 @@ There hasn’t been measurable commit activity in the period.
 ## SELECT Latency & DML Latency
 
 - **Metric Name:** `aws.rds.select_latency`
-- **Aggregation Used:** `max`
+- **Aggregation Used:** avg
 - **Units:** milliseconds (ms)
 - **Description:** Time taken for SELECT queries (No data shown — MySQL integration required).
 
@@ -581,7 +617,7 @@ SELECT latency → specific latency for SELECT queries
 ## DML latency → latency for DML operations (INSERT, UPDATE, DELETE)
 
 - **Metric Name:** `aws.rds.dmllatency`
-- **Aggregation Used:** `max`
+- **Aggregation Used:** `avg`
 - **Units:** milliseconds (ms)
 - **Description:** Latency of Data Manipulation Language (INSERT, UPDATE, DELETE) operations.
 
@@ -632,8 +668,9 @@ Reads have tiny spikes but still under 1–1.5 ms, which is excellent.
 ## Slow Query Rate – empty graph
 
 - **Metric Name:** `mysql.performance.slow_queries`
-- **Aggregation Used:** `sum`
-- **Units:** count
+- **Aggregation Used:** `avg`
+- **Units:** count (number of slow queries)
+- **Legend / Tags:** grouped by host
 - **Description:** Number of queries that exceeded the server-defined slow query threshold.
 
 This would show:
@@ -652,7 +689,8 @@ Given your latency numbers are tiny, it’s very likely no slow queries.
 
 - **Metric Name:** `aws.rds.blocked_transactions`
 - **Aggregation Used:** `sum`
-- **Units:** count
+- **Units:** count (number of blocked transactions)
+- **Legend / Tags:** grouped by dbinstanceidentifier
 - **Description:** Shows number of transactions waiting for locks.
 
 Blocked transaction = one query waiting because another one is locking the same rows/table.
@@ -705,13 +743,13 @@ Right now, the database is not very busy in terms of volume.
 
 SELECT Throughput:
 - **Metric Name:** `aws.rds.select_throughput`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** `avg` by db instance
 - **Units:** operations/second
 - **Description:** Number of SELECT queries processed per second.
 
 DML Throughput: 
 - **Metric Name:** `aws.rds.dmlthroughput`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** `avg` by db instance
 - **Units:** operations/second
 - **Description:** Number of DML queries processed per second.
   
@@ -753,7 +791,8 @@ So nothing to worry about here.
 
 - **Metric Name:** `aws.rds.deadlocks`
 - **Aggregation Used:** `sum`
-- **Units:** count
+- **Units:** count (number of deadlock events)
+- **Legend / Tags:** grouped by dbinstanceidentifier
 - **Description:**  Displays the number of deadlocks detected in the database. A deadlock happens when two queries block each other.  
   (No data shown — deadlocks did not occur.)
 
@@ -784,7 +823,8 @@ Again, very good.
 
 - **Metric Name:** `mysql.queries.errors`
 - **Aggregation Used:** `sum`
-- **Units:** count
+- **Units:** count(number of errored queries)
+- **Legend / Tags:** grouped by query
 - **Description:** Shows how many queries resulted in an error. (No data shown — no query errors detected.)
 
 This widget should show:
@@ -802,10 +842,54 @@ We didn’t see any DB errors in this dashboard.
 
 ## Queries with Top Execution Time (bottom left)
 
-- **Metric Name:** `mysql.queries.count`, `mysql.queries.time`
-- **Aggregation Used:** `max`  
-- **Units:** milliseconds (ms)
-- **Description:** Identifies the slowest-running queries by execution duration. (No data shown — MySQL performance schema plugin may not be enabled.)
+### **1. Metric Name:** `mysql.queries.count`
+- **Aggregation Used:** `sum`
+- **Grouped By:** `query_signature`
+- **Description:**  
+  Counts how many times each SQL query (identified by its query signature) was executed.  
+  This helps identify which queries run most frequently.
+
+---
+
+### **2. Metric Name:** `mysql.queries.time`
+- **Aggregation Used:** `sum`
+- **Grouped By:** `query_signature`
+- **Description:**  
+  Measures the total execution time consumed by each SQL query type.  
+  Higher values indicate queries that are expensive or slow.
+
+---
+
+### **3. Metric Name:** `mysql.queries.time` (overall)
+- **Aggregation Used:** `count` (summed across everything)
+- **Description:**  
+  Represents the total accumulated execution time of *all* queries combined.  
+  Used as the baseline to calculate how much percentage time each query consumes.
+
+**Formula Used**
+100 * b / c
+
+yaml
+Copy code
+
+Where:  
+- **b** = Total execution time of a specific query signature  
+- **c** = Total execution time of all queries  
+
+This formula calculates:
+
+### **Percentage of total DB time consumed by each query**
+
+---
+
+## **Units**
+- **Percent (%)**
+
+---
+
+## **Legend / Tags**
+- Grouped by: `query_signature`
+
 
 This would normally show:
 
@@ -883,12 +967,45 @@ If free space goes below 10% of total disk → performance becomes slow and data
 Right now → Nothing is alarming.
 
 ## Instances with Least % Storage Available (Right)
+### **1. Metric Name:** `aws.rds.free_storage_space`
+- **Aggregation Used:** `avg`
+- **Description:**  
+  Shows how much **free disk storage** is currently available on each RDS instance.  
+  Lower values mean the instance is closer to running out of storage.
 
-- **Metric Name:** `aws.rds.free_storage_space`
-- **Aggregation Used:** `avg`, then converted to percentage of total allocated storage
-- **Units:** percent (%)
-- **Tags / Legend:** `dbinstanceidentifier`
-- **Description:** Displays free storage as a **percentage**, used to determine low-space alerts.
+---
+
+### **2. Metric Name:** `aws.rds.total_storage_space`
+- **Aggregation Used:** `avg`
+- **Description:**  
+  Shows the **total allocated storage** capacity for each RDS instance.  
+  Used as the baseline to calculate percentage of free storage.
+
+---
+
+## **Formula Used**
+(a / b) * 100
+
+Where:  
+- **a** = free storage space  
+- **b** = total storage space  
+
+This results in:
+
+### **Percentage of available storage left on each RDS instance**
+
+Higher percentage = more storage free  
+Lower percentage = instance is running out of space
+
+---
+
+## **Units**
+- **Percent (%)**
+
+---
+
+## **Legend / Tags**
+- Grouped by: `dbinstanceidentifier`
 
 This shows the percentage of free storage left, not the actual GiB.
 
@@ -917,8 +1034,16 @@ Not needed now.
 ## Average Write Operations per Second (Middle)
 
 - **Metric Name:** `aws.rds.write_iops`
-- **Aggregation Used:** `avg`
+- **Aggregation Used:** `avg` The graph shows the **average number of write operations per second** performed by the RDS instance(s) during the selected time window.
 - **Units:** operations per second (ops/s)
+- **Legend / Tags**
+- Grouped by: none  
+- Filters applied:
+  - `$account`
+  - `$region`
+  - `$dbinstance`
+  - `$dbcluster`
+  - `engine: aurora-mysql OR mysql`
 - **Description:** Average number of write operations happening per second across RDS instances.
 
 You see:
