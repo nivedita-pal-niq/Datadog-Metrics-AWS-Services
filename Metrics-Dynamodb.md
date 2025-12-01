@@ -19,7 +19,7 @@
 
 ## **2. Throttled requests**
 - **Metric Name:** `aws.dynamodb.throttled_requests`
-- **Aggregation Used:** sum
+- **Aggregation Used:** sum. The metric sums the total number of requests that were throttled by DynamoDB.
 - **Unit:** count
 - **Title in UI:** Throttled requests
 - **Description:** Number of throttled requests due to exceeding provisioned throughput. Requests DynamoDB refused to process because you exceeded your table’s capacity.
@@ -43,9 +43,13 @@ Higher latency = slower table performance.
 
 ## **4. Throttling**
 - **Metric Name:** `aws.dynamodb.throttled_requests`
-- **Aggregation Used:** sum
+- **Aggregation Used:** sum. The metric sums the total number of throttled requests grouped **per DynamoDB table name**.
 - **Unit:** count
 - **Title in UI:** Throttling
+- **Legend / Tags**
+   - Grouped by: `tablename`
+   - Source: `(everywhere)`
+   ;- No additional tags used
 - **Description:** Shows request throttling across DynamoDB tables. Overall view of how many requests DynamoDB blocked due to high usage.
   *(Shows “No Data” if no throttling events have occurred).*
 
@@ -61,6 +65,11 @@ This graph shows when and how often that happened.
 - **Aggregation Used:** sum
 - **Group By:** table_name
 - **Unit:** count
+- **Legend / Tags**
+   - Grouped by: `tablename`
+   - Display only: Top 50
+   - Sorted by: `aws.dynamodb.throttled_requests` (descending)
+- From: everywhere (all accounts/regions)
 - **Title in UI:** Most throttled tables
 - **Description:** Lists the tables experiencing the most throttling. Shows which specific tables are getting throttled the most.  
   *(Displays “No Data” when there is no throttling).*
@@ -70,9 +79,26 @@ It helps you quickly identify problem tables.
 ---
 
 ## **6. Reads — Percent of provisioned read consumed**
-- **Metric Name:** `aws.dynamodb.consumed_read_capacity_units`
-- **Aggregation Used:** avg
-- **Unit:** percent (%)
+- **Metric Name:** - `aws.dynamodb.consumed_read_capacity_units`  
+                   - `aws.dynamodb.provisioned_read_capacity_units`
+- A formula is used:
+
+  100 * (consumed_read_capacity_units / provisioned_read_capacity_units)
+  
+-  **Aggregation Used**
+       - `sum by tablename`
+       - `rollup: avg every 5 minutes`
+        - Final computation uses the **average** values.
+
+- **Units**
+Percentage (%)  
+(representing % of provisioned Read Capacity Units consumed)
+
+- **Legend / Tags**
+   - Grouped by: `tablename`
+   - Scope: All (`*`)
+   - Rollup window: 5 minutes
+   - Display: Line chart
 - **Title in UI:** Percent of provisioned read consumed
 - **Description:** Shows the percentage of the table’s provisioned read capacity that has been consumed. How much of your allocated read capacity is being used. 
   *(If the table uses On-Demand capacity, this graph may show “No Data”).*
@@ -94,7 +120,14 @@ If this goes above 80–90%, you risk throttling.
 
 ## **7. Most throttled tables by reads**
 - **Metric Name:** `aws.dynamodb.read_throttle_events`
-- **Aggregation Used:** sum
+- **Aggregation Used**
+     - `sum by tablename`
+     - Values are **reduced in timeframe to `max`**
+     - Display limited to **top 50 tables** (default)
+-  **Legend / Tags**
+        - Grouped by: `tablename`
+        - Source: `(everywhere)` scope
+        - Display mode: Flat table + line visualization
 - **Unit:** count
 - **Title in UI:** Most throttled tables by reads
 - **Description:** Identifies tables that are throttled specifically for read operations. Shows which tables are throttled because too many read requests were made.
@@ -105,7 +138,7 @@ This helps you find which tables need more read capacity.
 
 ## **8. System Errors**
 - **Metric Name:** `aws.dynamodb.system_errors`
-- **Aggregation Used:** sum
+- **Aggregation Used:** sum by tablename 
 - **Unit:** count
 - **Title in UI:** System Errors
 - **Description:** Displays system-level DynamoDB errors (service-side errors). Errors that occurred inside DynamoDB itself.
@@ -136,7 +169,16 @@ These are mistakes in your code, not DynamoDB’s fault.
 ---
 
 ## **10. Percent of provisioned write consumed**
-- **Metric Name:** `aws.dynamodb.consumed_write_capacity_units`
+- **Metric Name:** - **a = `aws.dynamodb.consumed_write_capacity_units`**  
+                   - **b = `aws.dynamodb.provisioned_write_capacity_units`**
+- **Formula:**  
+100 * (a / b)
+
+This formula shows **what percentage of your allocated write capacity is actually being used**.
+
+**Final Computation**
+100 * (avg(consumed_wcu) / avg(provisioned_wcu))
+
 - **Aggregation Used:** avg  
 - **Unit:** percent (%)  
 - **Title in UI:** Percent of provisioned write consumed  
