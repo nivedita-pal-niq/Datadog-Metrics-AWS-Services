@@ -1,5 +1,7 @@
 ![diagram](images/dynamodb1.png)
 
+![diagram](images/dynamodb2.png)
+
 # **Amazon DynamoDB Dashboard — Metrics Documentation**
 
 ---
@@ -133,3 +135,56 @@ These are mistakes in your code, not DynamoDB’s fault.
 
 ---
 
+## **10. Percent of provisioned write consumed**
+- **Metric Name:** `aws.dynamodb.consumed_write_capacity_units`
+- **Aggregation Used:** avg  
+- **Unit:** percent (%)  
+- **Title in UI:** Percent of provisioned write consumed  
+- **Description:** This tells you **how much of your DynamoDB write capacity you are actually using**.  
+  Think of provisioned capacity like a “monthly data plan.”  
+  - If you are allowed to use 100 units per second, and you use 50, then you have used 50% of your plan.  
+  This metric helps you understand if your table is:  
+  - **Operating normally**  
+  - **Getting close to max capacity** (high % usage)  
+  - **At risk of throttling** if usage crosses capacity limits  
+  If your table is On-Demand mode, it may show **“No Data”** because this concept applies mainly to provisioned capacity.
+
+---
+
+## **11. Most throttled tables by writes**
+- **Metric Name:** `aws.dynamodb.write_throttle_events`
+- **Aggregation Used:** sum  
+- **Unit:** count  
+- **Title in UI:** Most throttled tables by writes  
+- **Description (Layman Explanation):**  
+  This shows which DynamoDB tables are **getting blocked or slowed down** because they are trying to write **more data than they are allowed to**.  
+  Throttling means:  
+  > DynamoDB says: “You are writing too fast. Slow down.”  
+  When throttling happens, your application may retry operations or experience delays.  
+  This metric helps you identify which tables need:  
+  - More provisioned write capacity  
+  - Better traffic distribution  
+  - Batch operations optimization  
+  If no tables are exceeding capacity, this widget shows **“No Data.”**
+
+---
+
+## **12. Failed conditional write attempts**
+- **Metric Name:** `aws.dynamodb.conditional_check_failed_requests`
+- **Aggregation Used:** sum  
+- **Unit:** count  
+- **Title in UI:** Failed conditional write attempts  
+- **Description (Layman Explanation):**  
+  This metric counts how many times a **conditional write** failed.  
+  A conditional write is like saying:  
+  > “Update this item **only if** this condition is true.”  
+  Example:  
+  - Update price **only if** current price = 100  
+  If the condition is not met (e.g., price already changed), DynamoDB **rejects the write**.  
+  These failures help you detect:  
+  - Concurrency issues (multiple people/processes updating the same item)  
+  - Incorrect business rules  
+  - Optimistic locking conflicts  
+  This metric is useful for debugging application logic rather than system performance.
+
+---
